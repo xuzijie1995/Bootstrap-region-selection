@@ -21,3 +21,23 @@ I use this selection in my project. And it has other functional requirements as 
 + 1.一级地址“勾选”将影响其**当前从属**的所有对应二级地址，点击一级名称会显示对应二级地址，但不会影响二级地址，全选二级地址，对应一级地址也会被“勾选”
 + 2.在同一个配送模板中,所有二级地址只会出现一次，如上截图所示，在新的配送区域行中，已被选择的区域会被剔除，而且，全选一级地址从属的所有地址,同时，一级地址下的二级地址没有在其他配置行中被剔除，那么将会显示一级地址名称而非全被的二级地址名称,如图上所示
 
+# The setting code <br/> 代码
+
+## Asynchronous data <br/> 异步数据
+
+```Parent data
+{"data":[
+{"id":"11","parent_id":"0","name":"北京"},{"id":"12","parent_id":"0","name":"天津"},{"id":"13","parent_id":"0","name":"河北"},{"id":"14","parent_id":"0","name":"山西"},{"id":"15","parent_id":"0","name":"内蒙古"},{"id":"21","parent_id":"0","name":"辽宁"},{"id":"22","parent_id":"0","name":"吉林"},{"id":"23","parent_id":"0","name":"黑龙江"},{"id":"31","parent_id":"0","name":"上海"},
+...
+]}
+```
+```Children data
+{"data":
+{
+...,
+"32":[{"id":"3201","parent_id":"32","name":"南京"},{"id":"3202","parent_id":"32","name":"无锡"},{"id":"3203","parent_id":"32","name":"徐州"},{"id":"3204","parent_id":"32","name":"常州"},{"id":"3205","parent_id":"32","name":"苏州"},{"id":"3206","parent_id":"32","name":"南通"},{"id":"3207","parent_id":"32","name":"连云港"},{"id":"3208","parent_id":"32","name":"淮安"},{"id":"3209","parent_id":"32","name":"盐城"},{"id":"3210","parent_id":"32","name":"扬州"},{"id":"3211","parent_id":"32","name":"镇江"},{"id":"3212","parent_id":"32","name":"泰州"},{"id":"3213","parent_id":"32","name":"宿迁"}],
+"33":[{"id":"3301","parent_id":"33","name":"杭州"},{"id":"3302","parent_id":"33","name":"宁波"},{"id":"3303","parent_id":"33","name":"温州"},{"id":"3304","parent_id":"33","name":"嘉兴"},{"id":"3305","parent_id":"33","name":"湖州"},{"id":"3306","parent_id":"33","name":"绍兴"},{"id":"3307","parent_id":"33","name":"金华"},{"id":"3308","parent_id":"33","name":"衢州"},{"id":"3309","parent_id":"33","name":"舟山"},{"id":"3310","parent_id":"33","name":"台州"},{"id":"3311","parent_id":"33","name":"丽水"}],
+...
+}}
+```
+to be continue
