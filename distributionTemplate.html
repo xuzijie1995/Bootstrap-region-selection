@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+		<title>配送模板</title>
+		<script type="text/javascript" src="js/common.js"></script>
+		<script type="text/javascript" src="js/plugins/bootstrap-editable/bootstrap-editable.min.js"></script>
+		<link rel="stylesheet" href="css/common.css" />
+		<link rel="stylesheet" href="css/bootstrap-editable.css" />
+		<style>
+			.traTablelist section{
+				margin-bottom: 15px;
+			}
+			.traTablelist section.empty{
+				margin-bottom: 0;
+			}
+			.tool-inline *{
+				display: inline-block;
+			}
+			.tool-inline>span{
+				font-weight: normal;
+				cursor: pointer;
+			}
+			.modal-body .form-group{
+				margin:0;
+			}
+			.cityList .alert .checkbox-inline{
+				margin-left: 10px;
+			}
+			.provinceList .alert .checkbox-inline{
+				margin-left: 10px;
+				cursor: auto;
+			}
+			.provinceList .alert .checkbox-inline label{
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body class="body-style">
+		<div class="">
+			<h3>配送模板</h3>
+		</div>
+		<div class="form-horizontal form-list">
+			<form role="form" action="" method="post">
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">模块名称</label>
+                    <div class="col-sm-3">
+                    	<input class="form-control" type="text" placeholder="请输入模块名称" name="traName" required>
+                    	<span class="help-block"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">配送单位</label>
+                    <div class="col-sm-3" style="margin-top: 5px;">
+                    	<span class="label label-primary">目前仅支持按件数</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">配送区域</label>
+                    <div class="col-sm-3">
+                    	<button type="button" class="btn btn-primary" onclick="addOneTra()"><i class="glyphicon glyphicon-plus"></i>新增配送区域行</button>
+                    </div>
+                </div>
+                <div class="form-group">
+	                <div class="col-sm-6 col-sm-offset-1 traTablelist">
+	                	<section>
+	                		<table class="traTable initTable" name="0"></table>
+	                	</section>
+	                </div>
+                </div>
+                <div class="form-group col-sm-3 center">
+               		 <label class="col-sm-1 control-label"></label>
+                	<button class="btn btn-primary" type="button" onclick="check()"><i class="glyphicon glyphicon-floppy-disk"></i>确认提交
+                	</button>    
+                </div>          
+			</form>
+			<section>
+				<div class="modal fade" id="traModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+								<h4 class="modal-title">
+									编辑配送区域
+								</h4>
+							</div>
+							<div class="modal-body">
+								<section>
+				                	<div class="form-group">
+						                <h3 style="margin-top:0">选择省</h3>
+				               		</div>
+					                <section class="provinceList">
+						            </section>
+						            <div style="display: none">
+							            <div class="form-group">
+							                <h3 style="margin-top:0" id="cityName">城市</h3>
+					               		</div>
+						                <section class="cityList">
+						                	<div class='alert alert-info' role='alert'>点击省名后展示相应城市地址</div>
+							            </section>
+						        	</div>
+								</section>
+							</div>
+							<div class="modal-footer" style="position: relative;">
+								<span class="label label-warning">操作完成后记得保存</span>
+								<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+								</button><button type="button" class="btn btn-primary" onclick="ok()">
+								<i class="glyphicon glyphicon-floppy-disk"></i>保存
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</body>
+	<script>
+	init(window);//common.js公共方法,判断访问页面是否在index框架内,index同时验证其是否登录,否则跳转至登录页
+
+	var $pFlag=false;//接口请求标志
+	var $cFlag=false;//接口请求标志
+	var $dFlag=false;//接口请求标志
+	var $ShippingDataLength=0;//接收数据长度
+	var $shippingId='';
+	var $idList='';//保存当前选择的区域地址最终输出的地址名称与id字符串
+	var $nameList='';//保存当前选择的区域地址最终输出的地址名称与id字符串
+	var $removeProvinceList='';//剔出非当前行已选的地区区域
+	var $removeCityList='';//剔出非当前行已选的地区区域
+	var $indexClick=0//配送模板标志位，当前操作的配送区域行
+	var $index=0;//配送模板标志位，默认为0，后续配送区域表格累加index，便于jquery筛选选择
+	var $provinceGroup={}; ///接口请求所有所有一级地址,即现有全部二级地址的对象json字符串,key值为一级地址id
+	var $cityGroup={}; //接口请求所有所有二级地址,即现有全部二级地址的对象json字符串,key值为一级地址id
+	var $cityGroupAllSelected={}; //用于判断是否全选，存入 [pid]=>cId1,cId2,cId3
+	var $cityGroupSelected={}; //当前选择的,用户选择的二级地址对象json字符串,key值为一级地址id
+	var $provinceList=[];//存储一级地址id与name，[id]=name id与name都是接口传递的数据
+	var $cityList=[];//存储二级级地址id与name，[id]=name id与name都是接口传递的数据
+	var $provinceId='';//用户当前选择的一级地址id,用于获取city,以及上述对象使用。
+	var $provinceName='';//用户当前选择的一级地址中文,用于获取city,以及上述对象使用。
+	var $provinceIdList='';//当前全选一级地址的id json字符串
+	var $traName="读取中";
+    var $ShippingData =[];
+	$(function () {
+		loadingOpen();
+		$shippingId = getParams('id');
+		$.ajax({
+	        type: "POST",
+	        url: $base_path+'c=Shipping&m=getShipping',
+	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        data: {
+	            shippingId:parseInt($shippingId)
+	        },
+	        dataType: "json",
+	        success: function(data){
+	        	//console.log("success");
+	            switch (parseInt(data.code)){
+	                case 1400200 : {
+	                	$("input[name='traName']").val(data.data['shipping_name']);
+						var $m=data.data['methods'];
+						for(var j=0;j<$m.length;j++){
+							var sa='默认';
+							if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
+							var temp={
+								shipping_area:sa,
+								shipping_area_name:$m[j]['shipping_area_name'],
+								is_default:$m[j]['is_default'],
+								firstNum:$m[j]['config']['firstNum'],
+								firstFee:$m[j]['config']['firstFee'],
+								conNum:$m[j]['config']['conNum'],
+								conFee:$m[j]['config']['conFee'],
+							}
+							$ShippingData.push(temp);
+						}
+						$ShippingDataLength=$ShippingData.length;
+						initTra($ShippingData);//初始化默认地址模板
+	                	break;}
+	                case 1400202 : showTip('获取失败');break;
+	                default : error(this,data);break;
+	            }
+	            $dFlag=true;
+	            if($pFlag&&$cFlag&&$dFlag)loadingClose();
+	        },
+	        error:function(data){
+		        error(this,data);
+		    }
+	    });
+	    $("#traModal").on("click",".provinceList input",function(e){
+			if(e.target.nodeName.toLowerCase()=='input'){
+				get_city_input($(e.target).data("id"),this);
+			}
+		});
+		$("#traModal").on("click",".provinceList label",function(e){
+			if(e.target.nodeName.toLowerCase()=='label'){
+				get_city($(e.target).data("id"));
+			}
+		});
+		$("#traModal").on("click",".cityList input",function(e){
+			if(e.target.nodeName.toLowerCase()=='input'){
+				editCityGroup($(e.target).data("id"),this);
+			}
+		});
+		get_province();
+		get_allcity();
+		$('#traModal').on('show.bs.modal', function () {
+			createCityList();
+		});
+		$('#traModal').on('hidden.bs.modal', function () {
+			// modal弹窗对用户完全隐藏时钩子
+			//重置数据
+			$indexClick=-1;
+			$(".cityList").parent().hide();
+		});
+		
+		
+	});
+	//配送模块表格初始化构造
+ 	var TraTableInit = function ($c,$d) {
+		var oTraTableInit = new Object();
+		//初始化Table
+		oTraTableInit.Init = function () {
+			$('table.initTable').bootstrapTable({
+				url: '',   //请求后台的URL（*）
+				method: 'post',      //请求方式（*）
+				striped: true,      //是否显示行间隔色
+				cache: false,      //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+				pagination: false,     //是否显示分页（*）
+				sortable: false,      //是否启用排序
+				sortOrder: "asc",     //排序方式
+				queryParams: '',//传递参数（*）
+				sidePagination: "client",   //分页方式：client客户端分页，server服务端分页（*）
+				pageNumber:1,      //初始化加载第一页，默认第一页
+				pageSize: 100,      //每页的记录行数（*）
+				pageList: [],  //可供选择的每页的行数（*）
+				search: false,      //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
+				strictSearch: false,
+				showColumns: false,     //是否显示所有的列
+				showRefresh: false,     //是否显示刷新按钮
+				minimumCountColumns: 2,    //最少允许的列数
+				clickToSelect: false,    //是否启用点击选中行
+				singleSelect: false,
+				height: '',      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+				uniqueId: '',      //每一行的唯一标识，一般为主键列
+				showToggle:false,     //是否显示详细视图和列表视图的切换按钮
+				cardView: false,     //是否显示详细视图
+				detailView: false,     //是否显示父子表
+				showHeader:true,
+				columns: $c,
+				data: $d
+			});
+		};
+	return oTraTableInit;
+	};
+	//配送模块-初始化页面上面的按钮事件
+	var TraButtonInit = function (e) {
+		var oTraButtonInit = new Object();
+		var postdata = {};
+		if(empty(e)){
+			e="table.traTable.initTable td a";
+		}
+		oTraButtonInit.Init = function () {
+		$(e).editable({
+			success: function(response, newValue) {
+				var $i=$(this).data("index");
+				var $f=$(this).data("field");
+				var $v=''
+				if(empty(newValue)||isNaN(newValue)||newValue<0){
+					switch($f){
+						case 'firstFee':$v=1;$v=$v.toFixed(2);break;
+						case 'conFee':$v=0;$v=$v.toFixed(2);break;
+						case 'firstNum':$v=1;$v=$v.toFixed(0);;break;
+						case 'conNum':$v=1;$v=$v.toFixed(0);;break;
+						default:break;
+					}
+				}else{
+					switch($f){
+						case 'firstFee':$v=newValue;$v=parseFloat($v).toFixed(2);break;
+						case 'conFee':$v=newValue;$v=parseFloat($v).toFixed(2);break;
+						case 'firstNum':$v=parseInt(newValue);break;
+						case 'conNum':$v=parseInt(newValue);break;
+						default:break;
+					}
+				}
+				var $row='{"'+$f+'":"'+$v+'"}';
+				var $this= $(this).parents("table");
+				$($this).bootstrapTable("updateRow",{index:$i,row:jQuery.parseJSON($row)});//更新表格数据
+				var $d=$($this).bootstrapTable("getData");
+				var $tableIndex=$this.attr('name');
+				$ShippingData[$tableIndex][$f]=$d[0][$f];//更新数据数组
+				//table更新数据后会自动刷新，需要重新为组件绑定事件监听
+				var oTraButtonInit = new TraButtonInit($($this).find('td a'));
+				oTraButtonInit.Init();
+    		}
+		});
+		//初始化页面上面的按钮事件
+		$("table.traTable.initTable th span.edit").on("click",function(e){
+			$indexClick=$(this).parents("table").attr('name');
+			$removeCityList=removeCityListInit();//生成需要剔出的二级地址数组 1101,1102,1103,1104
+			if($pFlag&&$cFlag){$('#traModal').modal('show');}//构建一级地址checkbox列表
+			else {showTip('获取区域中,请稍后重试编辑区域');}
+		});
+		$("table.traTable.initTable th span.delete").on("click",function(e){
+			//showConfirm("确认删除当前用户",function(){});
+			$indexClick=$(this).parents("table").attr('name');
+			showConfirm("确认删除此行配置",function(){
+				$ShippingData[$indexClick]='';
+				var $this=$("table.traTable").get($indexClick);
+				$($this).bootstrapTable("destroy");//摧毁旧行
+				$("table.traTable.initTable").removeClass("initTable");//bootstrap删除表格将table标签还原,此时需要去除表格初始化标致，避免后续重复渲染。
+				$($this).parents("section").addClass("empty");//摧毁旧行
+			});
+		});
+		if($("table.traTable").length>$ShippingDataLength)$("table.traTable.initTable th span.edit").trigger("click");//在旧数据的基础上新增新的行时打开区域选择
+		$("table.traTable.initTable").removeClass("initTable");
+		};
+		return oTraButtonInit;
+	};
+	function initTra($data){
+		//生成配送表格
+		$($data).each(function(i,e){
+			if($("table.traTable.initTable").length==0){
+				var $e = "<section><table class='traTable initTable' name="+(++$index)+"></table></section>";
+				$(".traTablelist").append($e);
+			}
+			var $d=[];
+			if(parseInt(e['is_default'])==1){
+				$c=[[{
+					field: '',
+					title: '配送区域',
+					align: 'left'
+				},{
+					field: '',
+					title: '默认',
+					align: 'right',
+					colspan: 3,
+				}],[{
+					field: 'firstNum',
+					title: '首件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'firstFee',
+					title: '首费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conNum',
+					title: '续件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conFee',
+					title: '续费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				}]];
+			}else{
+				$c=[[{
+					field: 'shipping_area',
+					title: e.shipping_area_name+'<div class="tool-inline"><span class="label label-primary edit">编辑</span><div style="margin-right:15px"></div><span class="label label-danger delete">删除</span></div>',
+					colspan: 4,
+				}],[{
+					field: 'firstNum',
+					title: '首件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'firstFee',
+					title: '首费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conNum',
+					title: '续件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conFee',
+					title: '续费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				}]];
+			}
+			$d.push(e);
+			var oTraTable = new TraTableInit($c,$d);
+			oTraTable.Init();
+			//初始化表格内的修改&删除按钮事件
+			var oTraButtonInit = new TraButtonInit();
+			oTraButtonInit.Init();
+		})
+	}
+	function updateTra(data,index){
+		//生成配送表格
+		var $d=[];
+		$c=[[{
+			field: 'shipping_area',
+			title: data.shipping_area_name+'<div class="tool-inline"><span class="label label-primary edit">编辑</span><div style="margin-right:15px"></div><span class="label label-danger delete">删除</span></div>',
+			colspan: 4,
+		}],[{
+			field: 'firstNum',
+			title: '首件',
+			formatter:function(value,row,index){
+				return checkFormat(value,row,index,this.field);
+			}
+		},{
+			field: 'firstFee',
+			title: '首费',
+			formatter:function(value,row,index){
+				return checkFormat(value,row,index,this.field);
+			}
+		},{
+			field: 'conNum',
+			title: '续件',
+			formatter:function(value,row,index){
+				return checkFormat(value,row,index,this.field);
+			}
+		},{
+			field: 'conFee',
+			title: '续费',
+			formatter:function(value,row,index){
+				return checkFormat(value,row,index,this.field);
+			}
+		}]];
+		$d.push(data);
+		var oTraTable = new TraTableInit($c,$d);
+		oTraTable.Init();
+		//初始化表格内的修改&删除按钮事件
+		var oTraButtonInit = new TraButtonInit();
+		oTraButtonInit.Init();
+	}
+
+	function addOneTra(){
+		var $temp={
+			"shipping_area":"",
+			"firstNum":"1",
+			"firstFee":"100.00",
+			"conNum":"1",
+			"conFee":"100.00",
+			"shipping_area_name":"请编辑配送区域",
+			"is_default":0,
+			"parent_ids":""
+		}
+		if($ShippingDataLength==0){showTip('获取数据中,请稍后重试');}
+		else{
+			$ShippingData.push($temp);
+			initTra($temp);//生成配送区域和表格
+		}
+	}
+	function check(){
+		if(!checkInputsEmpty())return false;
+		//console.log($ShippingData);
+		var $traName = $("input[name='traName']");
+		var methods=[];
+		for(var i=0;i<$ShippingData.length;i++){
+			if(!empty($ShippingData[i])){
+				if(i!=0&&empty($ShippingData[i]['shipping_area'])){showTip('有尚未编辑的配送区域！请完成编辑或删除空区域！');return false;}
+				var sa='';
+				if(i!=0)sa=$ShippingData[i]['shipping_area'];
+				var san='';
+				if(i!=0)san=$ShippingData[i]['shipping_area_name'];
+				var isDefault=1;
+				if(i!=0)isDefault=0;
+				var config={
+					firstNum:$ShippingData[i]['firstNum'],
+					firstFee:$ShippingData[i]['firstFee'],
+					conNum:$ShippingData[i]['conNum'],
+					conFee:$ShippingData[i]['conFee']
+				};
+				var temp={
+					shipping_area:sa,
+					config:config,
+					is_default:isDefault,
+					shipping_area_name:san,
+					parent_ids:$ShippingData[i]['parent_ids']
+				}
+				methods.push(temp);
+			}
+		}
+		loadingOpen();
+		$.ajax({
+	        type: "POST",
+	        url: $base_path+'c=Shipping&m=editShipping',
+	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        data: {
+	        	shippingId:$shippingId,
+	            shippingName:$($traName).val(),
+	            methods:methods,
+	        },
+	        dataType: "json",
+	        success: function(data){
+	            switch (parseInt(data.code)){
+	                case 1400400 : showTip('编辑配送模板成功');window.parent.parentH();break;
+	                case 1400401 : showTip('填写必填项');break;
+	                case 1400402 : showTip('保存失败');break;
+	                default : error(this,data);break;
+	            }
+	            loadingClose();
+	        },
+	        error:function(data){
+		        error(this,data);
+		    }
+	    });
+ 	}
+
+ 	///////////////////////////////////////////////////////////
+ 	//地区弹窗内事件
+ 	///////////////////////////////////////////////////////////
+	//编辑地址区域弹出框保存事件
+	function ok(){
+		//遍历所有一级地址id，查看cityGroupSelected内【id】下选择的二级地区字符串,解析\
+		var idList='';
+		var nameList='';
+		$(".cityList input:checked").each(function(i,e){
+			if(empty(idList))idList=$(e).val()+',';
+			else idList=idList+$(e).val()+',';
+		})
+		$(".cityList section").each(function(i,e){
+			if($(e).find("input:checked").length>0){
+				if($(e).find("input:checked").length==$cityGroup[$(e).attr("name")].length){
+					if(empty(nameList))nameList=$provinceList[$(e).attr("name")]+',';
+					else nameList=nameList+$provinceList[$(e).attr("name")]+',';
+				}else{
+					$(e).find("input:checked").each(function(ii,ie){
+						if(empty(nameList))nameList=$cityList[$(ie).val()]+',';
+						else nameList=nameList+$cityList[$(ie).val()]+',';
+					})
+				}
+			}
+		});
+		var $this=$("table.traTable").get($indexClick);
+		$($this).bootstrapTable("destroy");//摧毁旧行
+		$($this).addClass("initTable");//打上重新渲染标记inittable
+		$ShippingData[$indexClick].shipping_area=idList;//更新区域位置
+		$ShippingData[$indexClick].shipping_area_name=nameList;
+		updateTra($ShippingData[$indexClick],$indexClick);//重新生成新行
+		$('#traModal').modal('hide');
+	}
+	function get_province(){//获取一级地址
+    	var url = $base_path+'c=UserAddress&m=getProvince';
+	    $.ajax({
+	        type : "post",
+	        url  : url,
+	        dataType: "json", 
+	        error:function(data){
+		        error(this,data);
+		    },
+	        success: function(data) {
+	        	$provinceGroup=data.data
+	        	for(var i=0;i<$provinceGroup.length;i++){
+	        		$provinceList[parseInt($provinceGroup[i]['id'])]=$provinceGroup[i]['name'];
+	        	}
+	        	$pFlag=true;
+	        	if($pFlag&&$cFlag&&$dFlag)loadingClose();
+	        }
+	    });
+	}
+	function get_allcity(){//获取所有二级地址
+		var url = $base_path+'c=UserAddress&m=getAllAreas';
+	    $.ajax({
+	        type : "post",
+	        url  : url,
+	        dataType: "json", 
+	        error:function(data){
+		        error(this,data);
+		    },
+	        success: function(data) {
+	        	var temp = data.data;
+	        	$cityGroup=data.data;
+	        	temp='';
+	        	$cFlag=true;
+	        	if($pFlag&&$cFlag&&$dFlag)loadingClose();
+	        }
+	    });
+	}
+	function removeProvinceListInit(){//生成需要剔出的一级地址
+		var temp='';
+		for(var i=1;i<$ShippingData.length;i++){
+			if(i!=$indexClick){//本行的已选地址不在剔出范围
+				temp+=$ShippingData[i].parent_ids;
+			}
+		}
+		return temp;
+	}
+	function removeCityListInit(){//生成需要剔出的二级地址
+		var temp='';
+		for(var i=0;i<$ShippingData.length;i++){
+			if(i!=$indexClick){//本行的已选地址不在剔出范围
+				temp+=$ShippingData[i]['shipping_area'];
+			}
+		}
+		return temp;
+	}
+    function createProvinceList(data){//构建一级地址checkbox列表
+		var ProvinceList='';
+		var checked='';
+		for(var i=0;i<data.length;i++){
+			checked='';
+			if($removeProvinceList.indexOf(data[i]['id'])<0){
+				if($(".cityList").find("section[name='"+data[i]['id']+"'] input").length==$(".cityList").find("section[name='"+data[i]['id']+"'] input:checked").length){
+					checked='checked';
+				}
+				ProvinceList=ProvinceList+"<div class='checkbox-inline'><input type='checkbox' name="+data[i]['id']+" value="+data[i]['id']+" data-id="+data[i]['id']+" "+checked+">"+"<label class='checkbox-item' data-id="+data[i]['id']+">"+data[i]['name']+"</label></div>" 
+			}          
+	    }
+		if(empty(ProvinceList)){ProvinceList="<div class='alert alert-info' role='alert'>所有区域均已选择</div>";}
+	    else{ProvinceList="<div class='alert alert-info' role='alert'>"+ProvinceList+"</div>";}
+		$(".provinceList").html(ProvinceList);
+	}
+	function createCityList(){//构建二级地址checkbox列表
+		$removeProvinceList="";
+		var content='';
+		for(var i=0;i<Object.keys($cityGroup).length;i++){
+			var pId=Object.keys($cityGroup)[i];
+			var cityList="";
+			for(var j=0;j<$cityGroup[pId].length;j++){
+				if($removeCityList.indexOf($cityGroup[pId][j]['id'])<0){//剔除非本行数据选择地区的已选区域
+					var checked="checked";
+					if($ShippingData[$indexClick]['shipping_area'].indexOf($cityGroup[pId][j]['id'])<0)checked='';
+					cityList=cityList+"<label class='checkbox-item checkbox-inline'><input type='checkbox' value="+$cityGroup[pId][j]['id']+" "+checked+" data-id="+$cityGroup[pId][j]['id']+">"+$cityGroup[pId][j]['name']+"</label>"   
+				}
+				$cityList[$cityGroup[pId][j]['id']]=$cityGroup[pId][j]['name'];
+			}
+			if(empty(cityList))$removeProvinceList+=pId;
+			content=content+"<section name='"+pId+"' style='display:none' >"+cityList+"</section>";
+	    }
+	    content="<div class='alert alert-info' role='alert'>"+content+"</div>";
+	    $(".cityList").html(content);
+	    createProvinceList($provinceGroup);
+	}
+	function get_city(v){//点击一级地址名称事件，显示所有二级地址
+	    if(!v > 0){
+	        return;
+	    }
+	    $provinceId=v;
+	    $(".cityList").find("section").hide();
+	    $(".cityList").find("section[name='"+$provinceId+"']").show();
+	    $("#cityName").text($provinceList[$provinceId]);
+	    $(".cityList").parent().show();
+	}
+	function get_city_input(v,e){//点击一级地址checkbox框事件，全部/不全选
+	    $provinceId=v;
+	    $(".cityList").find("section").hide();
+	    $(".cityList").find("section[name='"+$provinceId+"']").show();
+	    $("#cityName").text($provinceList[$provinceId]);
+	    $(".cityList").parent().show();
+	    if($(e).is(':checked')){
+	    	$(".cityList").find("section[name='"+$provinceId+"'] input").prop("checked",true);
+	    }else{
+	    	$(".cityList").find("section[name='"+$provinceId+"'] input").prop("checked",false);
+	    }
+	}
+	//点击二级地址触发事件,将勾选地址加入$cityGroupSelected
+	function editCityGroup(cityId,e){
+		//window.event.preventDefault();
+		window.event.stopPropagation();
+		//判断是否全选
+		if($(".cityList").find("input").length==$(".cityList").find("input:checked").length){
+			$("input[name='"+$provinceId+"']").prop("checked",true);
+			//添加全选的一级地址id
+		}else{
+			$("input[name='"+$provinceId+"']").prop("checked",false);
+		}
+	}
+	</script>
+</html>
