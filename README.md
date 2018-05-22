@@ -29,7 +29,15 @@ I use this selection in my project. And it has other functional requirements as 
 
 ```Parent data
 {"data":[
-{"id":"11","parent_id":"0","name":"北京"},{"id":"12","parent_id":"0","name":"天津"},{"id":"13","parent_id":"0","name":"河北"},{"id":"14","parent_id":"0","name":"山西"},{"id":"15","parent_id":"0","name":"内蒙古"},{"id":"21","parent_id":"0","name":"辽宁"},{"id":"22","parent_id":"0","name":"吉林"},{"id":"23","parent_id":"0","name":"黑龙江"},{"id":"31","parent_id":"0","name":"上海"},
+{"id":"11","parent_id":"0","name":"北京"},
+{"id":"12","parent_id":"0","name":"天津"},
+{"id":"13","parent_id":"0","name":"河北"},
+{"id":"14","parent_id":"0","name":"山西"},
+{"id":"15","parent_id":"0","name":"内蒙古"},
+{"id":"21","parent_id":"0","name":"辽宁"},
+{"id":"22","parent_id":"0","name":"吉林"},
+{"id":"23","parent_id":"0","name":"黑龙江"},
+{"id":"31","parent_id":"0","name":"上海"},
 ...
 ]}
 ```
