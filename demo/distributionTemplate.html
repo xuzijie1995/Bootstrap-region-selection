@@ -3,9 +3,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<title>配送模板</title>
-		<script type="text/javascript" src="js/common.js"></script>
+		<!-->Bootstrap & Jquery<-->
 		<script type="text/javascript" src="js/plugins/bootstrap-editable/bootstrap-editable.min.js"></script>
-		<link rel="stylesheet" href="css/common.css" />
 		<link rel="stylesheet" href="css/bootstrap-editable.css" />
 		<style>
 			.traTablelist section{
@@ -115,8 +114,6 @@
 		</div>
 	</body>
 	<script>
-	init(window);//common.js公共方法,判断访问页面是否在index框架内,index同时验证其是否登录,否则跳转至登录页
-
 	var $pFlag=false;//接口请求标志
 	var $cFlag=false;//接口请求标志
 	var $dFlag=false;//接口请求标志
@@ -138,52 +135,45 @@
 	var $provinceName='';//用户当前选择的一级地址中文,用于获取city,以及上述对象使用。
 	var $provinceIdList='';//当前全选一级地址的id json字符串
 	var $traName="读取中";
-    var $ShippingData =[];
+    	var $ShippingData =[];
 	$(function () {
-		loadingOpen();
 		$shippingId = getParams('id');
 		$.ajax({
 	        type: "POST",
-	        url: $base_path+'c=Shipping&m=getShipping',
+	        url: url,
 	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 	        data: {
 	            shippingId:parseInt($shippingId)
 	        },
 	        dataType: "json",
 	        success: function(data){
-	        	//console.log("success");
-	            switch (parseInt(data.code)){
-	                case 1400200 : {
-	                	$("input[name='traName']").val(data.data['shipping_name']);
-						var $m=data.data['methods'];
-						for(var j=0;j<$m.length;j++){
-							var sa='默认';
-							if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
-							var temp={
-								shipping_area:sa,
-								shipping_area_name:$m[j]['shipping_area_name'],
-								is_default:$m[j]['is_default'],
-								firstNum:$m[j]['config']['firstNum'],
-								firstFee:$m[j]['config']['firstFee'],
-								conNum:$m[j]['config']['conNum'],
-								conFee:$m[j]['config']['conFee'],
-							}
-							$ShippingData.push(temp);
+	            ...
+			$("input[name='traName']").val(data.data['shipping_name']);
+					var $m=data.data['methods'];
+					for(var j=0;j<$m.length;j++){
+						var sa='默认';
+						if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
+						var temp={
+							shipping_area:sa,
+							shipping_area_name:$m[j]['shipping_area_name'],
+							is_default:$m[j]['is_default'],
+							firstNum:$m[j]['config']['firstNum'],
+							firstFee:$m[j]['config']['firstFee'],
+							conNum:$m[j]['config']['conNum'],
+							conFee:$m[j]['config']['conFee'],
 						}
-						$ShippingDataLength=$ShippingData.length;
-						initTra($ShippingData);//初始化默认地址模板
-	                	break;}
-	                case 1400202 : showTip('获取失败');break;
-	                default : error(this,data);break;
-	            }
-	            $dFlag=true;
-	            if($pFlag&&$cFlag&&$dFlag)loadingClose();
+						$ShippingData.push(temp);
+					}
+					$ShippingDataLength=$ShippingData.length;
+					initTra($ShippingData);//初始化默认地址模板
+			}
+			...
 	        },
 	        error:function(data){
-		        error(this,data);
-		    }
+		        ...
+		}
 	    });
-	    $("#traModal").on("click",".provinceList input",function(e){
+	    	$("#traModal").on("click",".provinceList input",function(e){
 			if(e.target.nodeName.toLowerCase()=='input'){
 				get_city_input($(e.target).data("id"),this);
 			}
@@ -209,7 +199,6 @@
 			$indexClick=-1;
 			$(".cityList").parent().hide();
 		});
-		
 		
 	});
 	//配送模块表格初始化构造
@@ -485,26 +474,20 @@
 		loadingOpen();
 		$.ajax({
 	        type: "POST",
-	        url: $base_path+'c=Shipping&m=editShipping',
+	        url: url,
 	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 	        data: {
 	        	shippingId:$shippingId,
-	            shippingName:$($traName).val(),
-	            methods:methods,
+	            	shippingName:$($traName).val(),
+	            	methods:methods,
 	        },
 	        dataType: "json",
 	        success: function(data){
-	            switch (parseInt(data.code)){
-	                case 1400400 : showTip('编辑配送模板成功');window.parent.parentH();break;
-	                case 1400401 : showTip('填写必填项');break;
-	                case 1400402 : showTip('保存失败');break;
-	                default : error(this,data);break;
-	            }
-	            loadingClose();
+	           ...
 	        },
 	        error:function(data){
-		        error(this,data);
-		    }
+		    ...
+		}
 	    });
  	}
 
@@ -596,7 +579,7 @@
 		}
 		return temp;
 	}
-    function createProvinceList(data){//构建一级地址checkbox列表
+    	function createProvinceList(data){//构建一级地址checkbox列表
 		var ProvinceList='';
 		var checked='';
 		for(var i=0;i<data.length;i++){
