@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<title>配送模板</title>
-		<!-->Bootstrap & Jquery<-->
+		<!-->Bootstrap & Jquery replaies<-->
 		<script type="text/javascript" src="js/plugins/bootstrap-editable/bootstrap-editable.min.js"></script>
 		<link rel="stylesheet" href="css/bootstrap-editable.css" />
 		<style>
@@ -68,7 +68,7 @@
 	                </div>
                 </div>
                 <div class="form-group col-sm-3 center">
-               		 <label class="col-sm-1 control-label"></label>
+               		<label class="col-sm-1 control-label"></label>
                 	<button class="btn btn-primary" type="button" onclick="check()"><i class="glyphicon glyphicon-floppy-disk"></i>确认提交
                 	</button>    
                 </div>          
@@ -114,9 +114,6 @@
 		</div>
 	</body>
 	<script>
-	var $pFlag=false;//接口请求标志
-	var $cFlag=false;//接口请求标志
-	var $dFlag=false;//接口请求标志
 	var $ShippingDataLength=0;//接收数据长度
 	var $shippingId='';
 	var $idList='';//保存当前选择的区域地址最终输出的地址名称与id字符串
@@ -139,33 +136,33 @@
 	$(function () {
 		$shippingId = getParams('id');
 		$.ajax({
-	        type: "POST",
-	        url: url,
-	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-	        data: {
-	            shippingId:parseInt($shippingId)
-	        },
-	        dataType: "json",
-	        success: function(data){
-	            ...
-			$("input[name='traName']").val(data.data['shipping_name']);
-					var $m=data.data['methods'];
-					for(var j=0;j<$m.length;j++){
-						var sa='默认';
-						if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
-						var temp={
-							shipping_area:sa,
-							shipping_area_name:$m[j]['shipping_area_name'],
-							is_default:$m[j]['is_default'],
-							firstNum:$m[j]['config']['firstNum'],
-							firstFee:$m[j]['config']['firstFee'],
-							conNum:$m[j]['config']['conNum'],
-							conFee:$m[j]['config']['conFee'],
-						}
-						$ShippingData.push(temp);
+			type: "POST",
+			url: url,
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+			data: {
+			    shippingId:parseInt($shippingId)
+			},
+			dataType: "json",
+			success: function(data){
+			    ...
+				$("input[name='traName']").val(data.data['shipping_name']);
+				var $m=data.data['methods'];
+				for(var j=0;j<$m.length;j++){
+					var sa='默认'; //default
+					if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
+					var temp={
+						shipping_area:sa,
+						shipping_area_name:$m[j]['shipping_area_name'],
+						is_default:$m[j]['is_default'],
+						firstNum:$m[j]['config']['firstNum'],
+						firstFee:$m[j]['config']['firstFee'],
+						conNum:$m[j]['config']['conNum'],
+						conFee:$m[j]['config']['conFee'],
 					}
-					$ShippingDataLength=$ShippingData.length;
-					initTra($ShippingData);//初始化默认地址模板
+					$ShippingData.push(temp);
+				}
+				$ShippingDataLength=$ShippingData.length;
+				initTra($ShippingData);//初始化默认地址模板
 			}
 			...
 	        },
@@ -471,7 +468,6 @@
 				methods.push(temp);
 			}
 		}
-		loadingOpen();
 		$.ajax({
 	        type: "POST",
 	        url: url,
