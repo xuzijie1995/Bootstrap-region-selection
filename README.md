@@ -151,10 +151,15 @@ function get_province(cityId,e){
 }
 ```
 + Parent Listener get_city() : show the Children which belong to the Parent when click the Parent's Name
-+ Parent Listener get_city_input() : check /uncheck the Chilren which belong to the Parent when check /uncheck the Parent
++ Parent Listener get_city_input() : check /uncheck all the Chilren which belong to the Parent when check /uncheck the Parent
 + Children Listener get_province() : check /uncheck the Parent when (all its Children has been checked )/(not all its Children has been checked). 
++ 父监听 get_city() ：点击父级名称，显示相应子地址栏
++ 父监听 get_city_input() ：勾选/取消选择,相应子地址全选/全不选
++ 子监听 get_province() ：子地址被全选/未被全选,父级自动勾选/取消勾选
 
-### 1.Init 初始化
+![My project demo 5](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_5.png)
+
+### 3.Extra Init-Table 额外的：初始化表格
 
 ```initTra()
 	function initTra($data){
@@ -204,11 +209,7 @@ function get_province(cityId,e){
 + $data 是已保存的数据，初始化已存在的数据并用Bootstrap-table显示，同时导入的列表项数据有“默认”与“自定义”2类，为避免插入表格多次操作DOM，此处还使用了createDocumentFragment()，之后再统一操作DOM
 + TraButtonInit（）按钮初始化中还使用了X-editable，来实现a标签点击可修改的效果，如下图所示
 
-![My project demo 5](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_6_2.png)
-
-### 2.Init 初始化
-
-
+![My project demo 6](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_6_2.png)
 
 
 to be continue
