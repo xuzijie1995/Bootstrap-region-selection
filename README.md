@@ -12,10 +12,10 @@ Please click the picture.
 ## My Distribution template<br> 我的配送模板案例
 I use this selection in my project. And it has other functional requirements as well.<br/>
 我在自己的项目中使用了这个组件，当然它还具备其他需求下的功能<br/>
-###案例图1
+### 案例图1
 ![My project demo 2](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_2_2.png)
 ----
-###案例图2
+### 案例图2
 ![My project demo 3](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_4.png)
 <br>
 + 1.Select Parent Address(Parent)，all Parent's(Children) children **which belong to Parent now** will be selected.Select all Children,their Parent will be selected.Click the name of Parent will show Parent's children,but nothing will be changed.
@@ -54,6 +54,105 @@ I use this selection in my project. And it has other functional requirements as 
 + 我请求的数据包含所有一级地址与二级地址，二级地址通过内部的'parent_id'对应一级地址.
 
 ## Key Code <br> 关键代码
+### 1.Create city-area checkboxs 二级与一级地址栏构建
+
+```create City List
+function createCityList(){//构建二级地址checkbox列表
+	$removeProvinceList="";
+	var content='';
+	for(var i=0;i<Object.keys($cityGroup).length;i++){
+		var pId=Object.keys($cityGroup)[i];
+		var cityList="";
+		for(var j=0;j<$cityGroup[pId].length;j++){
+			if($removeCityList.indexOf($cityGroup[pId][j]['id'])<0){//剔除非本行数据选择地区的已选区域
+				var checked="checked";
+				if($ShippingData[$indexClick]['shipping_area'].indexOf($cityGroup[pId][j]['id'])<0)checked='';
+				cityList=cityList+"<label class='checkbox-item checkbox-inline'><input type='checkbox' value="+$cityGroup[pId][j]['id']+" "+checked+" data-id="+$cityGroup[pId][j]['id']+">"+$cityGroup[pId][j]['name']+"</label>"   
+			}
+			$cityList[$cityGroup[pId][j]['id']]=$cityGroup[pId][j]['name'];
+		}
+		if(empty(cityList))$removeProvinceList+=pId+',';
+		content=content+"<section name='"+pId+"' style='display:none' >"+cityList+"</section>";
+    }
+    content="<div class='alert alert-info' role='alert'>"+content+"</div>";
+    $(".cityList").html(content);
+    createProvinceList($provinceGroup);
+}
+
+```
+```
+function createProvinceList(data){//构建一级地址checkbox列表
+	var ProvinceList='';
+	var checked='';
+	for(var i=0;i<data.length;i++){
+		checked='';
+		if($removeProvinceList.indexOf(data[i]['id'])<0){
+			if($(".cityList").find("section[name='"+data[i]['id']+"'] input").length==$(".cityList").find("section[name='"+data[i]['id']+"'] input:checked").length){
+				checked='checked';
+			}
+			ProvinceList=ProvinceList+"<div class='checkbox-inline'><input type='checkbox' name="+data[i]['id']+" value="+data[i]['id']+" data-id="+data[i]['id']+" "+checked+">"+"<label class='checkbox-item' data-id="+data[i]['id']+">"+data[i]['name']+"</label></div>" 
+		}          
+    	}
+	if(empty(ProvinceList)){
+		ProvinceList="<div class='alert alert-info' role='alert'>所有区域均已选择</div>";
+		$ShippingData[$indexClick]='';
+		var $this=$("table.traTable").get($indexClick);
+		$($this).bootstrapTable("destroy");//摧毁旧行
+		$("table.traTable.initTable").removeClass("initTable");//bootstrap删除表格将table标签还原,此时需要去除表格初始化标致，避免后续重复渲染。
+		$($this).parents("section").addClass("empty");//摧毁旧行
+	}
+    else{ProvinceList="<div class='alert alert-info' role='alert'>"+ProvinceList+"</div>";}
+	$(".provinceList").html(ProvinceList);
+}
+```
++ I use Bootstrap-Modal to show my region-selection,click the button above will open the Modal and trigger the hook functions to create the checkboxs, which will removes the checked checkboxs in other lines. The main idea of removing is that All the Children(ajax data $cityGroup) - other lines Chilren($removeCityList) = the Children we need to display.
++ $removeCityList is the string which split by ',' with other lines Children's Id, map the $cityGroup and use indexOf to judge the Children which need to be removed.
++ Based on the principle, do the same job to the Parent.
++ 我使用了Modal模态窗口来呈现地址选择组件，“新增配送区域”将会打开这个模态窗，从而触发模态的钩子函数，执行二级地址checkbox的构建，其中也包括了剔除其他行已出现地址的操作，剔除的主要思想是，所有的二级地址（异步获取的数据$cityGroup）- 非当前区域行的二级地址（$removeCityList） = 需要显示的二级地址。
++ $removeCityList是一个以‘，’分隔符拼接二级地址Id字符串，通过遍历异步获取的数据$cityGroup并借助indexOf来判断每一个二级地址是否剔除
++ 在此基础上，同理构建一级地址。
+
+### 2.checkbox click Listeners 地址点击事件监听
+
+```
+function get_city(id){//点击一级地址名称事件，显示所有二级地址
+	if(!id > 0){
+		return;
+	}
+	$provinceId=id;
+	$(".cityList").find("section").hide();
+	$(".cityList").find("section[name='"+$provinceId+"']").show();
+	$("#cityName").text($provinceList[$provinceId]);
+	$(".cityList").parent().show();
+}
+function get_city_input(id,e){//点击一级地址checkbox框事件，全部/不全选
+	$provinceId=id;
+	$(".cityList").find("section").hide();
+	$(".cityList").find("section[name='"+$provinceId+"']").show();
+	$("#cityName").text($provinceList[$provinceId]);
+	$(".cityList").parent().show();
+	if($(e).is(':checked')){
+		$(".cityList").find("section[name='"+$provinceId+"'] input").prop("checked",true);
+	}else{
+		$(".cityList").find("section[name='"+$provinceId+"'] input").prop("checked",false);
+	}
+}
+//点击二级地址触发事件,将勾选地址加入$cityGroupSelected
+function get_province(cityId,e){
+	//window.event.preventDefault();
+	window.event.stopPropagation();
+	//判断是否全选
+	if($(".cityList").find("input").length==$(".cityList").find("input:checked").length){
+		$("input[name='"+$provinceId+"']").prop("checked",true);
+		//添加全选的一级地址id
+	}else{
+		$("input[name='"+$provinceId+"']").prop("checked",false);
+	}
+}
+```
++ Children Listener get_city() : show the Children which belong to the Parent when click the Parent's Name
++ Children Listener get_city_input() : check /uncheck the Chilren which belong to the Parent when check /uncheck the Parent
++ Parent Listener get_province() : check /uncheck the Parent when (all its Children has been checked )/(not all its Children has been checked). 
 
 ### 1.Init 初始化
 
@@ -106,5 +205,10 @@ I use this selection in my project. And it has other functional requirements as 
 + TraButtonInit（）按钮初始化中还使用了X-editable，来实现a标签点击可修改的效果，如下图所示
 
 ![My project demo 5](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_6_2.png)
+
+### 2.Init 初始化
+
+
+
 
 to be continue
