@@ -150,9 +150,9 @@ function get_province(cityId,e){
 	}
 }
 ```
-+ Children Listener get_city() : show the Children which belong to the Parent when click the Parent's Name
-+ Children Listener get_city_input() : check /uncheck the Chilren which belong to the Parent when check /uncheck the Parent
-+ Parent Listener get_province() : check /uncheck the Parent when (all its Children has been checked )/(not all its Children has been checked). 
++ Parent Listener get_city() : show the Children which belong to the Parent when click the Parent's Name
++ Parent Listener get_city_input() : check /uncheck the Chilren which belong to the Parent when check /uncheck the Parent
++ Children Listener get_province() : check /uncheck the Parent when (all its Children has been checked )/(not all its Children has been checked). 
 
 ### 1.Init 初始化
 
