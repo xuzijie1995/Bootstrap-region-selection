@@ -193,7 +193,7 @@
 		});
 		$("#traModal").on("click",".cityList input",function(e){
 			if(e.target.nodeName.toLowerCase()=='input'){
-				editCityGroup($(e.target).data("id"),this);
+				get_province($(e.target).data("id"),this);
 			}
 		});
 		get_province();
@@ -631,7 +631,7 @@
 	    }
 	}
 	//点击二级地址触发事件,将勾选地址加入$cityGroupSelected
-	function editCityGroup(cityId,e){
+	function get_province(cityId,e){
 		//window.event.preventDefault();
 		window.event.stopPropagation();
 		//判断是否全选
