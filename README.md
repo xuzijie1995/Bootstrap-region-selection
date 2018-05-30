@@ -112,6 +112,8 @@ function createProvinceList(data){//构建一级地址checkbox列表
 + $removeCityList是一个以‘，’分隔符拼接二级地址Id字符串，通过遍历异步获取的数据$cityGroup并借助indexOf来判断每一个二级地址是否剔除
 + 在此基础上，同理构建一级地址。
 
+![My project demo 5](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_5.png)
+
 ### 2.checkbox click Listeners 地址点击事件监听
 
 ```
@@ -157,7 +159,7 @@ function get_province(cityId,e){
 + 父监听 get_city_input() ：勾选/取消选择,相应子地址全选/全不选
 + 子监听 get_province() ：子地址被全选/未被全选,父级自动勾选/取消勾选
 
-![My project demo 5](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_5.png)
+![My project demo 1](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_1.png)
 
 ### 3.Extra Init-Table 额外的：初始化表格
 
