@@ -288,6 +288,16 @@
 		};
 		return oTraButtonInit;
 	};
+	function checkFormat(v,r,i,f){
+	//v:值 r:整行json i:行序号 f:列名filed，即整行json内v值对应的key值
+	    var d = '';
+	    if(v==null||v==''){
+		d="<a href='#' class='editable' data-type='text' data-index="+i+" data-field="+f+"><i class='glyphicon glyphicon-pencil'></i></a>"
+	    }else{
+		d="<a href='#' class='editable' data-type='text' data-index="+i+" data-field="+f+">"+v+"<i class='glyphicon glyphicon-pencil'></i></a>"
+	    }
+	    return d;
+	}
 	function initTra($data){
 		//生成配送表格
 		var fragment = document.createDocumentFragment();
