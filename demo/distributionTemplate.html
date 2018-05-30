@@ -3,8 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<title>配送模板</title>
-		<!-->Bootstrap & Jquery replaies<-->
-		<script type="text/javascript" src="js/plugins/bootstrap-editable/bootstrap-editable.min.js"></script>
+		<!--bootstrap css & js-->	
 		<link rel="stylesheet" href="css/bootstrap-editable.css" />
 		<style>
 			.traTablelist section{
@@ -62,13 +61,10 @@
                 </div>
                 <div class="form-group">
 	                <div class="col-sm-6 col-sm-offset-1 traTablelist">
-	                	<section>
-	                		<table class="traTable initTable" name="0"></table>
-	                	</section>
 	                </div>
                 </div>
                 <div class="form-group col-sm-3 center">
-               		<label class="col-sm-1 control-label"></label>
+               		 <label class="col-sm-1 control-label"></label>
                 	<button class="btn btn-primary" type="button" onclick="check()"><i class="glyphicon glyphicon-floppy-disk"></i>确认提交
                 	</button>    
                 </div>          
@@ -114,17 +110,15 @@
 		</div>
 	</body>
 	<script>
-	var $ShippingDataLength=0;//接收数据长度
+	...
 	var $shippingId='';
-	var $idList='';//保存当前选择的区域地址最终输出的地址名称与id字符串
-	var $nameList='';//保存当前选择的区域地址最终输出的地址名称与id字符串
+	var $ShippingDataLength=0;
 	var $removeProvinceList='';//剔出非当前行已选的地区区域
 	var $removeCityList='';//剔出非当前行已选的地区区域
 	var $indexClick=0//配送模板标志位，当前操作的配送区域行
 	var $index=0;//配送模板标志位，默认为0，后续配送区域表格累加index，便于jquery筛选选择
 	var $provinceGroup={}; ///接口请求所有所有一级地址,即现有全部二级地址的对象json字符串,key值为一级地址id
 	var $cityGroup={}; //接口请求所有所有二级地址,即现有全部二级地址的对象json字符串,key值为一级地址id
-	var $cityGroupAllSelected={}; //用于判断是否全选，存入 [pid]=>cId1,cId2,cId3
 	var $cityGroupSelected={}; //当前选择的,用户选择的二级地址对象json字符串,key值为一级地址id
 	var $provinceList=[];//存储一级地址id与name，[id]=name id与name都是接口传递的数据
 	var $cityList=[];//存储二级级地址id与name，[id]=name id与name都是接口传递的数据
@@ -134,42 +128,59 @@
 	var $traName="读取中";
     	var $ShippingData =[];
 	$(function () {
-		$shippingId = getParams('id');
 		$.ajax({
-			type: "POST",
-			url: url,
-			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-			data: {
-			    shippingId:parseInt($shippingId)
-			},
-			dataType: "json",
-			success: function(data){
-			    ...
-				$("input[name='traName']").val(data.data['shipping_name']);
-				var $m=data.data['methods'];
-				for(var j=0;j<$m.length;j++){
-					var sa='默认'; //default
-					if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
-					var temp={
-						shipping_area:sa,
-						shipping_area_name:$m[j]['shipping_area_name'],
-						is_default:$m[j]['is_default'],
-						firstNum:$m[j]['config']['firstNum'],
-						firstFee:$m[j]['config']['firstFee'],
-						conNum:$m[j]['config']['conNum'],
-						conFee:$m[j]['config']['conFee'],
-					}
-					$ShippingData.push(temp);
-				}
-				$ShippingDataLength=$ShippingData.length;
-				initTra($ShippingData);//初始化默认地址模板
-			}
-			...
+	        type: "POST",
+	        url: url,
+	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        data: {
+	            ...
 	        },
-	        error:function(data){
-		        ...
-		}
+	        dataType: "json",
+	        success: function(data){
+	        	...
+	                	$("input[name='traName']").val(data.data['shipping_name']);
+						var $m=data.data['methods'];
+						for(var j=0;j<$m.length;j++){
+							var sa='默认';
+							if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
+							var temp={
+								shipping_area:sa,
+								shipping_area_name:$m[j]['shipping_area_name'],
+								is_default:$m[j]['is_default'],
+								firstNum:$m[j]['config']['firstNum'],
+								firstFee:$m[j]['config']['firstFee'],
+								conNum:$m[j]['config']['conNum'],
+								conFee:$m[j]['config']['conFee'],
+							}
+							$ShippingData.push(temp);
+						}
+						$ShippingDataLength=$ShippingData.length;
+						initTra($ShippingData);//初始化默认地址模板
+	                	...
+	        },
+	        ...
 	    });
+	    //初始化页面上面的按钮事件
+	    $("div.traTablelist").on("click","table th span.edit",function(e){
+	    	if(e.target.nodeName.toLowerCase()=='span'){
+	    		$indexClick=$(e.target).parents("table").attr('name');
+				$removeCityList=removeCityListInit();//生成需要剔出的二级地址数组 1101,1102,1103,1104
+				if($pFlag&&$cFlag){$('#traModal').modal('show');}//构建一级地址checkbox列表
+				else {showTip('获取区域中,请稍后重试编辑区域');}
+	    	}
+	    });
+		$("div.traTablelist").on("click","table th span.delete",function(e){
+			if(e.target.nodeName.toLowerCase()=='span'){
+				$indexClick=$(e.target).parents("table").attr('name');
+				showConfirm("确认删除此行配置",function(){
+					$ShippingData[$indexClick]='';
+					var $this=$("table.traTable").get($indexClick);
+					$($this).bootstrapTable("destroy");//摧毁旧行
+					$("table.traTable.initTable").removeClass("initTable");//bootstrap删除表格将table标签还原,此时需要去除表格初始化标致，避免后续重复渲染。
+					$($this).parents("section").addClass("empty");//摧毁旧行
+				});
+			}
+		});
 	    	$("#traModal").on("click",".provinceList input",function(e){
 			if(e.target.nodeName.toLowerCase()=='input'){
 				get_city_input($(e.target).data("id"),this);
@@ -196,14 +207,13 @@
 			$indexClick=-1;
 			$(".cityList").parent().hide();
 		});
-		
 	});
 	//配送模块表格初始化构造
- 	var TraTableInit = function ($c,$d) {
+ 	var TraTableInit = function ($e,$c,$d) {
 		var oTraTableInit = new Object();
 		//初始化Table
 		oTraTableInit.Init = function () {
-			$('table.initTable').bootstrapTable({
+			$($e).bootstrapTable({
 				url: '',   //请求后台的URL（*）
 				method: 'post',      //请求方式（*）
 				striped: true,      //是否显示行间隔色
@@ -236,14 +246,11 @@
 	return oTraTableInit;
 	};
 	//配送模块-初始化页面上面的按钮事件
-	var TraButtonInit = function (e) {
+	var TraButtonInit = function (e,b) {
 		var oTraButtonInit = new Object();
 		var postdata = {};
-		if(empty(e)){
-			e="table.traTable.initTable td a";
-		}
 		oTraButtonInit.Init = function () {
-		$(e).editable({
+		$(e).find('td a').editable({
 			success: function(response, newValue) {
 				var $i=$(this).data("index");
 				var $f=$(this).data("field");
@@ -272,40 +279,30 @@
 				var $tableIndex=$this.attr('name');
 				$ShippingData[$tableIndex][$f]=$d[0][$f];//更新数据数组
 				//table更新数据后会自动刷新，需要重新为组件绑定事件监听
-				var oTraButtonInit = new TraButtonInit($($this).find('td a'));
+				var oTraButtonInit = new TraButtonInit($(e),true);
 				oTraButtonInit.Init();
     		}
 		});
-		//初始化页面上面的按钮事件
-		$("table.traTable.initTable th span.edit").on("click",function(e){
-			$indexClick=$(this).parents("table").attr('name');
-			$removeCityList=removeCityListInit();//生成需要剔出的二级地址数组 1101,1102,1103,1104
-			if($pFlag&&$cFlag){$('#traModal').modal('show');}//构建一级地址checkbox列表
-			else {showTip('获取区域中,请稍后重试编辑区域');}
-		});
-		$("table.traTable.initTable th span.delete").on("click",function(e){
-			//showConfirm("确认删除当前用户",function(){});
-			$indexClick=$(this).parents("table").attr('name');
-			showConfirm("确认删除此行配置",function(){
-				$ShippingData[$indexClick]='';
-				var $this=$("table.traTable").get($indexClick);
-				$($this).bootstrapTable("destroy");//摧毁旧行
-				$("table.traTable.initTable").removeClass("initTable");//bootstrap删除表格将table标签还原,此时需要去除表格初始化标致，避免后续重复渲染。
-				$($this).parents("section").addClass("empty");//摧毁旧行
-			});
-		});
-		if($("table.traTable").length>$ShippingDataLength)$("table.traTable.initTable th span.edit").trigger("click");//在旧数据的基础上新增新的行时打开区域选择
-		$("table.traTable.initTable").removeClass("initTable");
+		if($("table.traTable").length>$ShippingDataLength&&!b)$(e).find('th span.edit').trigger("click");//加载获取到的编辑数据不触发在旧数据的基础上新增新的行时打开区域选择
+		$(e).removeClass("initTable");
 		};
 		return oTraButtonInit;
 	};
 	function initTra($data){
 		//生成配送表格
+		var fragment = document.createDocumentFragment();
 		$($data).each(function(i,e){
-			if($("table.traTable.initTable").length==0){
-				var $e = "<section><table class='traTable initTable' name="+(++$index)+"></table></section>";
-				$(".traTablelist").append($e);
-			}
+			var $s = document.createElement("section");
+			var $e = document.createElement("table");
+			$e.setAttribute('class','traTable initTable');
+			$e.setAttribute('name',$index++);
+			$s.appendChild($e);
+			fragment.appendChild($s);
+			//var $e = "<section><table class='traTable initTable' name="+(++$index)+"></table></section>";
+		});
+		$(".traTablelist").append(fragment);
+		var $table = $('table.initTable');
+		$($data).each(function(i,e){
 			var $d=[];
 			if(parseInt(e['is_default'])==1){
 				$c=[[{
@@ -374,16 +371,17 @@
 				}]];
 			}
 			$d.push(e);
-			var oTraTable = new TraTableInit($c,$d);
+			var oTraTable = new TraTableInit($table[i],$c,$d);
 			oTraTable.Init();
 			//初始化表格内的修改&删除按钮事件
-			var oTraButtonInit = new TraButtonInit();
+			var oTraButtonInit = new TraButtonInit($table[i]);
 			oTraButtonInit.Init();
 		})
 	}
 	function updateTra(data,index){
 		//生成配送表格
 		var $d=[];
+		var $table = $('table.initTable');
 		$c=[[{
 			field: 'shipping_area',
 			title: data.shipping_area_name+'<div class="tool-inline"><span class="label label-primary edit">编辑</span><div style="margin-right:15px"></div><span class="label label-danger delete">删除</span></div>',
@@ -414,10 +412,10 @@
 			}
 		}]];
 		$d.push(data);
-		var oTraTable = new TraTableInit($c,$d);
+		var oTraTable = new TraTableInit($table[0],$c,$d);
 		oTraTable.Init();
 		//初始化表格内的修改&删除按钮事件
-		var oTraButtonInit = new TraButtonInit();
+		var oTraButtonInit = new TraButtonInit($table[0]);
 		oTraButtonInit.Init();
 	}
 
@@ -432,11 +430,8 @@
 			"is_default":0,
 			"parent_ids":""
 		}
-		if($ShippingDataLength==0){showTip('获取数据中,请稍后重试');}
-		else{
-			$ShippingData.push($temp);
-			initTra($temp);//生成配送区域和表格
-		}
+		$ShippingData.push($temp);
+		initTra($temp);//生成配送区域和表格
 	}
 	function check(){
 		if(!checkInputsEmpty())return false;
@@ -473,17 +468,13 @@
 	        url: url,
 	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 	        data: {
-	        	shippingId:$shippingId,
-	            	shippingName:$($traName).val(),
-	            	methods:methods,
+	        	...
 	        },
 	        dataType: "json",
 	        success: function(data){
-	           ...
+	            ...
 	        },
-	        error:function(data){
-		    ...
-		}
+	        ...
 	    });
  	}
 
@@ -495,10 +486,15 @@
 		//遍历所有一级地址id，查看cityGroupSelected内【id】下选择的二级地区字符串,解析\
 		var idList='';
 		var nameList='';
+		var $this=$("table.traTable").get($indexClick);
 		$(".cityList input:checked").each(function(i,e){
 			if(empty(idList))idList=$(e).val()+',';
 			else idList=idList+$(e).val()+',';
 		})
+		if(empty(idList)){
+			$('#traModal').modal('hide');
+			return false
+		}
 		$(".cityList section").each(function(i,e){
 			if($(e).find("input:checked").length>0){
 				if($(e).find("input:checked").length==$cityGroup[$(e).attr("name")].length){
@@ -512,7 +508,6 @@
 				}
 			}
 		});
-		var $this=$("table.traTable").get($indexClick);
 		$($this).bootstrapTable("destroy");//摧毁旧行
 		$($this).addClass("initTable");//打上重新渲染标记inittable
 		$ShippingData[$indexClick].shipping_area=idList;//更新区域位置
@@ -521,50 +516,34 @@
 		$('#traModal').modal('hide');
 	}
 	function get_province(){//获取一级地址
-    	var url = $base_path+'c=UserAddress&m=getProvince';
 	    $.ajax({
 	        type : "post",
 	        url  : url,
 	        dataType: "json", 
-	        error:function(data){
-		        error(this,data);
-		    },
 	        success: function(data) {
 	        	$provinceGroup=data.data
 	        	for(var i=0;i<$provinceGroup.length;i++){
 	        		$provinceList[parseInt($provinceGroup[i]['id'])]=$provinceGroup[i]['name'];
 	        	}
-	        	$pFlag=true;
-	        	if($pFlag&&$cFlag&&$dFlag)loadingClose();
-	        }
+			...
+	        },
+		...
 	    });
 	}
 	function get_allcity(){//获取所有二级地址
-		var url = $base_path+'c=UserAddress&m=getAllAreas';
 	    $.ajax({
 	        type : "post",
 	        url  : url,
 	        dataType: "json", 
-	        error:function(data){
-		        error(this,data);
-		    },
 	        success: function(data) {
 	        	var temp = data.data;
 	        	$cityGroup=data.data;
 	        	temp='';
 	        	$cFlag=true;
-	        	if($pFlag&&$cFlag&&$dFlag)loadingClose();
-	        }
+	        	...
+	        },
+		...
 	    });
-	}
-	function removeProvinceListInit(){//生成需要剔出的一级地址
-		var temp='';
-		for(var i=1;i<$ShippingData.length;i++){
-			if(i!=$indexClick){//本行的已选地址不在剔出范围
-				temp+=$ShippingData[i].parent_ids;
-			}
-		}
-		return temp;
 	}
 	function removeCityListInit(){//生成需要剔出的二级地址
 		var temp='';
@@ -586,9 +565,16 @@
 				}
 				ProvinceList=ProvinceList+"<div class='checkbox-inline'><input type='checkbox' name="+data[i]['id']+" value="+data[i]['id']+" data-id="+data[i]['id']+" "+checked+">"+"<label class='checkbox-item' data-id="+data[i]['id']+">"+data[i]['name']+"</label></div>" 
 			}          
-	    }
-		if(empty(ProvinceList)){ProvinceList="<div class='alert alert-info' role='alert'>所有区域均已选择</div>";}
-	    else{ProvinceList="<div class='alert alert-info' role='alert'>"+ProvinceList+"</div>";}
+	    	}
+		if(empty(ProvinceList)){
+			ProvinceList="<div class='alert alert-info' role='alert'>所有区域均已选择</div>";
+			$ShippingData[$indexClick]='';
+			var $this=$("table.traTable").get($indexClick);
+			$($this).bootstrapTable("destroy");//摧毁旧行
+			$("table.traTable.initTable").removeClass("initTable");//bootstrap删除表格将table标签还原,此时需要去除表格初始化标致，避免后续重复渲染。
+			$($this).parents("section").addClass("empty");//摧毁旧行
+		}
+	    	else{ProvinceList="<div class='alert alert-info' role='alert'>"+ProvinceList+"</div>";}
 		$(".provinceList").html(ProvinceList);
 	}
 	function createCityList(){//构建二级地址checkbox列表
@@ -605,7 +591,7 @@
 				}
 				$cityList[$cityGroup[pId][j]['id']]=$cityGroup[pId][j]['name'];
 			}
-			if(empty(cityList))$removeProvinceList+=pId;
+			if(empty(cityList))$removeProvinceList+=pId+',';
 			content=content+"<section name='"+pId+"' style='display:none' >"+cityList+"</section>";
 	    }
 	    content="<div class='alert alert-info' role='alert'>"+content+"</div>";
