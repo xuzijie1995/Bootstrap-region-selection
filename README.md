@@ -2,14 +2,14 @@
 This is a component of a multi-select region in Bootstrap.
 这是一个可多选的城市-区域关联型区域选择
 
-# let me show you<br/> 一睹为快
+# let me show you<br> 一睹为快
 
 Please click the picture. 
 点击看大图会好点。
 ## Demo
 ![My project demo 1](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_1.png)
 
-## My Distribution template<br/> 我的配送模板案例
+## My Distribution template<br> 我的配送模板案例
 I use this selection in my project. And it has other functional requirements as well.<br/>
 我在自己的项目中使用了这个组件，当然它还具备其他需求下的功能<br/>
 ###案例图1
@@ -17,15 +17,15 @@ I use this selection in my project. And it has other functional requirements as 
 ----
 ###案例图2
 ![My project demo 3](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_4.png)
-<br/>
+<br>
 + 1.Select Parent Address(Parent)，all Parent's(Children) children **which belong to Parent now** will be selected.Select all Children,their Parent will be selected.Click the name of Parent will show Parent's children,but nothing will be changed.
 + 2.All Children can be selected only one time in every Distribution template.The selected Children will be kicked out from the other setting lines in the Distribution template. And All Children are selected without being kicked out in other setting lines, the Address Name in the setting line will show the Parent's Name.See 2 srceenshots above.<br/>Maybe I should change the demo into English :P.
 + 1.一级地址“勾选”将影响其**当前从属**的所有对应二级地址，点击一级名称会显示对应二级地址，但不会影响二级地址，全选二级地址，对应一级地址也会被“勾选”
 + 2.在同一个配送模板中,所有二级地址只会出现一次，如上截图所示，在新的配送区域行中，已被选择的区域会被剔除，而且，全选一级地址从属的所有地址,同时，一级地址下的二级地址没有在其他配置行中被剔除，那么将会显示一级地址名称而非全被的二级地址名称,案例图2所示
 
-# The setting code <br/> 代码
+# The setting code <br> 代码
 
-## Asynchronous data <br/> 异步数据
+## Asynchronous data <br> 异步数据
 
 ```Parent data
 {"data":[
@@ -50,10 +50,105 @@ I use this selection in my project. And it has other functional requirements as 
 ...
 }}
 ```
-+ I get all Parent Address And Children Address for one time from ajax.Every Children Address has 'parent_id' which can be used to find its Parent Address.<br/>
++ I get all Parent Address And Children Address for one time from ajax.Every Children Address has 'parent_id' which can be used to find its Parent Address.<br>
 + 我请求的数据包含所有一级地址与二级地址，二级地址通过内部的'parent_id'对应一级地址.
 
+## Key Code <br> 关键代码
 
-![My project demo 3](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_4.png)
+### 1.Init 初始化
+
+```initTra()
+	function initTra($data){
+		//生成配送表格
+		var fragment = document.createDocumentFragment();
+		$($data).each(function(i,e){
+			var $s = document.createElement("section");
+			var $e = document.createElement("table");
+			$e.setAttribute('class','traTable initTable');
+			$e.setAttribute('name',$index++);
+			$s.appendChild($e);
+			fragment.appendChild($s);
+			//var $e = "<section><table class='traTable initTable' name="+(++$index)+"></table></section>";
+		});
+		$(".traTablelist").append(fragment);
+		var $table = $('table.initTable');
+		$($data).each(function(i,e){
+			var $d=[];
+			if(parseInt(e['is_default'])==1){
+				$c=[[{
+					field: '',
+					title: '配送区域',
+					align: 'left'
+				},{
+					field: '',
+					title: '默认',
+					align: 'right',
+					colspan: 3,
+				}],[{
+					field: 'firstNum',
+					title: '首件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'firstFee',
+					title: '首费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conNum',
+					title: '续件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conFee',
+					title: '续费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				}]];
+			}else{
+				$c=[[{
+					field: 'shipping_area',
+					title: e.shipping_area_name+'<div class="tool-inline"><span class="label label-primary edit">编辑</span><div style="margin-right:15px"></div><span class="label label-danger delete">删除</span></div>',
+					colspan: 4,
+				}],[{
+					field: 'firstNum',
+					title: '首件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'firstFee',
+					title: '首费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conNum',
+					title: '续件',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				},{
+					field: 'conFee',
+					title: '续费',
+					formatter:function(value,row,index){
+						return checkFormat(value,row,index,this.field);
+					}
+				}]];
+			}
+			$d.push(e);
+			var oTraTable = new TraTableInit($table[i],$c,$d);
+			oTraTable.Init();
+			//初始化表格内的修改&删除按钮事件
+			var oTraButtonInit = new TraButtonInit($table[i]);
+			oTraButtonInit.Init();
+		})
+	}
+```
+![My project demo 5](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_6.png)
 
 to be continue
