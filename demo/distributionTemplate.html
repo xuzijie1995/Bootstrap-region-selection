@@ -40,34 +40,34 @@
 		</div>
 		<div class="form-horizontal form-list">
 			<form role="form" action="" method="post">
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">模块名称</label>
-                    <div class="col-sm-3">
-                    	<input class="form-control" type="text" placeholder="请输入模块名称" name="traName" required>
-                    	<span class="help-block"></span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">配送单位</label>
-                    <div class="col-sm-3" style="margin-top: 5px;">
-                    	<span class="label label-primary">目前仅支持按件数</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">配送区域</label>
-                    <div class="col-sm-3">
-                    	<button type="button" class="btn btn-primary" onclick="addOneTra()"><i class="glyphicon glyphicon-plus"></i>新增配送区域行</button>
-                    </div>
-                </div>
-                <div class="form-group">
-	                <div class="col-sm-6 col-sm-offset-1 traTablelist">
-	                </div>
-                </div>
-                <div class="form-group col-sm-3 center">
-               		 <label class="col-sm-1 control-label"></label>
-                	<button class="btn btn-primary" type="button" onclick="check()"><i class="glyphicon glyphicon-floppy-disk"></i>确认提交
-                	</button>    
-                </div>          
+				<div class="form-group">
+				    <label class="col-sm-1 control-label">模块名称</label>
+				    <div class="col-sm-3">
+					<input class="form-control" type="text" placeholder="请输入模块名称" name="traName" required>
+					<span class="help-block"></span>
+				    </div>
+				</div>
+				<div class="form-group">
+				    <label class="col-sm-1 control-label">配送单位</label>
+				    <div class="col-sm-3" style="margin-top: 5px;">
+					<span class="label label-primary">目前仅支持按件数</span>
+				    </div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-1 control-label">配送区域</label>
+						<div class="col-sm-3">
+						<button type="button" class="btn btn-primary" onclick="addOneTra()"><i class="glyphicon glyphicon-plus"></i>新增配送区域行</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-6 col-sm-offset-1 traTablelist">
+					</div>
+				</div>
+				<div class="form-group col-sm-3 center">
+					<label class="col-sm-1 control-label"></label>
+					<button class="btn btn-primary" type="button" onclick="check()"><i class="glyphicon glyphicon-floppy-disk"></i>确认提交
+					</button>    
+				</div>          
 			</form>
 			<section>
 				<div class="modal fade" id="traModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
