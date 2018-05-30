@@ -100,9 +100,8 @@ I use this selection in my project. And it has other functional requirements as 
 		})
 	}
 ```
-+ $data is the data which already exists，I init the Bootstrap-table to show my data，there are 2 kinds of columns setting for Bootstrap-table including 'default' and 'custom'.Avoid changing DOM frequently,it is necessary to use 'createDocumentFragment()'.
-+ For better using,X-editable is used by funtion TraButtonInit().See the screenshot next.
-<br>
++ $data is the data which already exists, I init the Bootstrap-table to show my data，there are 2 kinds of columns setting for Bootstrap-table including 'default' and 'custom'. Avoid changing DOM frequently, it is necessary to use 'createDocumentFragment()'.
++ For better using, X-editable is used by funtion TraButtonInit(). See the screenshot next.
 + $data 是已保存的数据，初始化已存在的数据并用Bootstrap-table显示，同时导入的列表项数据有“默认”与“自定义”2类，为避免插入表格多次操作DOM，此处还使用了createDocumentFragment()，之后再统一操作DOM
 + TraButtonInit（）按钮初始化中还使用了X-editable，来实现a标签点击可修改的效果，如下图所示
 
