@@ -54,6 +54,6 @@ I use this selection in my project. And it has other functional requirements as 
 + 我请求的数据包含所有一级地址与二级地址，二级地址通过内部的'parent_id'对应一级地址.
 
 
-
+![My project demo 3](https://raw.githubusercontent.com/xuzijie1995/Bootstrap-region-selection/master/images/screenshot_4.png)
 
 to be continue
