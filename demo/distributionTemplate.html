@@ -3,8 +3,14 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 		<title>配送模板</title>
-		<!--bootstrap css & js-->	
-		<link rel="stylesheet" href="css/bootstrap-editable.css" />
+		<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+		<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/locale/bootstrap-table-zh-CN.min.js"></script>
+		<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.css">	
+		<link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
 		<style>
 			.traTablelist section{
 				margin-bottom: 15px;
@@ -110,7 +116,7 @@
 		</div>
 	</body>
 	<script>
-	...
+	//...
 	var $shippingId='';
 	var $ShippingDataLength=0;
 	var $removeProvinceList='';//剔出非当前行已选的地区区域
@@ -129,44 +135,40 @@
     	var $ShippingData =[];
 	$(function () {
 		$.ajax({
-	        type: "POST",
-	        url: url,
+	        type: "Get",
+	        url: 'data.json',
 	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 	        data: {
-	            ...
+	            //...
 	        },
 	        dataType: "json",
 	        success: function(data){
-	        	...
-	                	$("input[name='traName']").val(data.data['shipping_name']);
-						var $m=data.data['methods'];
-						for(var j=0;j<$m.length;j++){
-							var sa='默认';
-							if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
-							var temp={
-								shipping_area:sa,
-								shipping_area_name:$m[j]['shipping_area_name'],
-								is_default:$m[j]['is_default'],
-								firstNum:$m[j]['config']['firstNum'],
-								firstFee:$m[j]['config']['firstFee'],
-								conNum:$m[j]['config']['conNum'],
-								conFee:$m[j]['config']['conFee'],
-							}
-							$ShippingData.push(temp);
-						}
-						$ShippingDataLength=$ShippingData.length;
-						initTra($ShippingData);//初始化默认地址模板
-	                	...
-	        },
-	        ...
+				$("input[name='traName']").val(data.data['shipping_name']);
+				var $m=data.data['methods'];
+				for(var j=0;j<$m.length;j++){
+					var sa='默认';
+					if(parseInt($m[j]['is_default'])!=1)sa=$m[j]['shipping_area'];
+					var temp={
+						shipping_area:sa,
+						shipping_area_name:$m[j]['shipping_area_name'],
+						is_default:$m[j]['is_default'],
+						firstNum:$m[j]['config']['firstNum'],
+						firstFee:$m[j]['config']['firstFee'],
+						conNum:$m[j]['config']['conNum'],
+						conFee:$m[j]['config']['conFee'],
+					}
+					$ShippingData.push(temp);
+				}
+				$ShippingDataLength=$ShippingData.length;
+				initTra($ShippingData);//初始化默认地址模板
+	        }
 	    });
 	    //初始化页面上面的按钮事件
 	    $("div.traTablelist").on("click","table th span.edit",function(e){
 	    	if(e.target.nodeName.toLowerCase()=='span'){
 	    		$indexClick=$(e.target).parents("table").attr('name');
 				$removeCityList=removeCityListInit();//生成需要剔出的二级地址数组 1101,1102,1103,1104
-				if($pFlag&&$cFlag){$('#traModal').modal('show');}//构建一级地址checkbox列表
-				else {showTip('获取区域中,请稍后重试编辑区域');}
+				$('#traModal').modal('show');//构建一级地址checkbox列表
 	    	}
 	    });
 		$("div.traTablelist").on("click","table th span.delete",function(e){
@@ -193,7 +195,7 @@
 		});
 		$("#traModal").on("click",".cityList input",function(e){
 			if(e.target.nodeName.toLowerCase()=='input'){
-				get_province($(e.target).data("id"),this);
+				get_province_input($(e.target).data("id"),this);
 			}
 		});
 		get_province();
@@ -297,6 +299,10 @@
 		d="<a href='#' class='editable' data-type='text' data-index="+i+" data-field="+f+">"+v+"<i class='glyphicon glyphicon-pencil'></i></a>"
 	    }
 	    return d;
+	}
+	function empty($str){
+		if($str==null||$str=='')return true;
+		else return false;
 	}
 	function initTra($data){
 		//生成配送表格
@@ -478,13 +484,13 @@
 	        url: url,
 	        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 	        data: {
-	        	...
+	        	//...
 	        },
 	        dataType: "json",
 	        success: function(data){
-	            ...
+	            //...
 	        },
-	        ...
+	        //...
 	    });
  	}
 
@@ -527,32 +533,30 @@
 	}
 	function get_province(){//获取一级地址
 	    $.ajax({
-	        type : "post",
-	        url  : url,
+	        type : "get",
+	        url  : 'DataParent.json',
 	        dataType: "json", 
 	        success: function(data) {
 	        	$provinceGroup=data.data
 	        	for(var i=0;i<$provinceGroup.length;i++){
 	        		$provinceList[parseInt($provinceGroup[i]['id'])]=$provinceGroup[i]['name'];
 	        	}
-			...
+			//...
 	        },
-		...
 	    });
 	}
 	function get_allcity(){//获取所有二级地址
 	    $.ajax({
-	        type : "post",
-	        url  : url,
+	        type : "get",
+	        url  : "DataChildren.json",
 	        dataType: "json", 
 	        success: function(data) {
 	        	var temp = data.data;
 	        	$cityGroup=data.data;
 	        	temp='';
-	        	$cFlag=true;
-	        	...
+	        	//...
 	        },
-		...
+		//...
 	    });
 	}
 	function removeCityListInit(){//生成需要剔出的二级地址
@@ -631,9 +635,9 @@
 	    }
 	}
 	//点击二级地址触发事件,将勾选地址加入$cityGroupSelected
-	function get_province(cityId,e){
+	function get_province_input(cityId,e){
 		//window.event.preventDefault();
-		window.event.stopPropagation();
+		//window.event.stopPropagation();
 		//判断是否全选
 		if($(".cityList").find("input").length==$(".cityList").find("input:checked").length){
 			$("input[name='"+$provinceId+"']").prop("checked",true);
